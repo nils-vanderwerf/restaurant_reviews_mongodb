@@ -1,6 +1,8 @@
+import mongodb from "mongodb"
+const ObjectId = mongodb.ObjectId
 let restaurants
 
-export default class Restaurants {
+export default class RestaurantsDAO {
     //connect to restaurants database, as soon as server starts
     // If restaurants reference is already filled, return it
     // else, try to fill it with a reference tio the database
@@ -37,12 +39,23 @@ export default class Restaurants {
 
         try {
             //find all the restaurants that match the query
-            cursor = await restaurants
-            .find(query)
+            cursor = await restaurants.find(query)
         } catch (e) {
             console.log(`Unable to issue find command, ${e}`)
-            return 
+            return { restaurantsList: [], totalNumRestaurants: 0 }
         }
+
+        const displayCursor = cursor.limit(restaurantsPerPage).skip(restaurantsPerPage * page)
+
+        try {
+            const restaurantsList = await displayCursor.toArray()
+            const totalNumRestaurants = await restaurants.countDocuments(query)
+
+            return {restaurantsList: [], totalNumRestaurants: 0 }
+        } catch (e) {
+            console.error(
+                `Unable to convert cursor to array or problem counting documents,`
+            )
         }
     }
 }
